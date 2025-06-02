@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Lista de Compras</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .header-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .header-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .progress-container {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            background: #FFD700;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .shopping-list {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #4CAF50;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .item:hover {
+            background: #e8f5e8;
+            transform: translateX(5px);
+        }
+
+        .item.completed {
+            background: #d4edda;
+            opacity: 0.7;
+            text-decoration: line-through;
+            border-left-color: #28a745;
+        }
+
+        .item-content {
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .item-details {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox.checked {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .total-section {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .total-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Botón flotante para agregar productos */
+        .floating-add-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #FF6B6B, #FF5252);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .floating-add-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .floating-add-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+            animation: slideUp 0.3s ease;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal h3 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        /* Estilos para estadísticas */
+        .stats-section {
+            padding: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .stat-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .stat-subtitle {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-date {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .history-amount {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .previous-config {
+            background: #e3f2fd;
+            padding: 8px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-size: 12px;
+            color: #1976d2;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                margin: 5px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .shopping-list {
+                padding: 15px;
+                max-height: 65vh;
+            }
+            
+            .item {
+                padding: 12px;
+            }
+            
+            .modal-content {
+                margin: 15% auto;
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Mi Lista de Compras</h1>
+            <div class="header-buttons">
+                <button class="header-btn" onclick="showStats()">📊 Estadísticas</button>
+                <button class="header-btn" onclick="newShopping()">🆕 Nueva Lista</button>
+                <button class="header-btn" onclick="finishShopping()">✅ Finalizar</button>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="stats">
+                    <span id="progressText">0 de 0 productos</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="shopping-list" id="shoppingList">
+            <!-- Los items se cargarán aquí -->
+        </div>
+
+        <!-- Botón flotante para agregar nuevos productos -->
+        <div class="floating-add-btn" id="floatingAddBtn" onclick="openNewProductModal()">
+            <span>+</span>
+        </div>
+
+        <div class="total-section">
+            <div class="total-amount" id="totalAmount">₡0</div>
+            <div class="total-label">Total gastado</div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar cantidad y precio -->
+    <div class="modal" id="itemModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Agregar a la lista</h3>
+            <div id="previousConfigDiv" style="display: none;"></div>
+            <div class="form-group">
+                <label for="quantity">Cantidad:</label>
+                <input type="number" id="quantity" min="1" value="1">
+            </div>
+            <div class="form-group">
+                <label for="price">Precio unitario (₡):</label>
+                <input type="number" id="price" min="0" step="1" placeholder="0">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="addToCart()">Agregar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar productos nuevos -->
+    <div class="modal" id="newProductModal">
+        <div class="modal-content">
+            <h3>Agregar Producto Nuevo</h3>
+            <div class="form-group">
+                <label for="newProductName">Nombre del producto:</label>
+                <input type="text" id="newProductName" placeholder="Ej: Yogurt griego">
+            </div>
+            <div class="form-group">
+                <label for="newQuantity">Cantidad:</label>
+                <input type="number" id="newQuantity" min="1" value="1">
+            </div>
+            <div class="form-group">
+                <label for="newPrice">Precio unitario (₡):</label>
+                <input type="number" id="newPrice" min="0" step="1" placeholder="0">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeNewProductModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="addNewProduct()">Agregar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Estadísticas -->
+    <div class="modal" id="statsModal">
+        <div class="modal-content">
+            <h3>📊 Estadísticas de Compras</h3>
+            <div class="form-group">
+                <label for="statsFilter">Ver estadísticas de:</label>
+                <select id="statsFilter" onchange="updateStatsDisplay()">
+                    <option value="all">Todo el historial</option>
+                    <option value="month">Este mes</option>
+                    <option value="week">Esta semana</option>
+                </select>
+            </div>
+            <div id="statsContent"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" onclick="clearHistory()" style="flex: 0.4;">🗑️ Borrar</button>
+                <button class="btn btn-secondary" onclick="closeStatsModal()" style="flex: 0.6;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración inicial de productos
+        const DEFAULT_PRODUCTS = [
+            "Azúcar", "Sal", "Jabón de platos", "Esponja", "Cebolla", "Chile", "Tomate", 
+            "Pepino", "Papa", "Brócoli", "Huevos", "Leche", "Atún", "Natilla", "Manzana", 
+            "Yogur", "Chuletas económicas", "Pollo", "Carne", "Papel higiénico", 
+            "Toallas de cocina o servilletas", "Toallas para mujeres", "Cepillo de dientes", 
+            "Semillas de almendra", "Semillas de maní", "Ajo en polvo", "Jabón neutral", 
+            "Té de jengibre", "Leche líquida", "Espinaca", "Plátanos", 
+            "Bolsas de basura medianas", "Lechuga"
+        ];
+
+        // Variables globales
+        let availableProductsJSON = [];
+        let shoppingCartJSON = [];
+        let currentProduct = null;
+        let currentShoppingId = null;
+
+        // Clases para manejo de datos
+        class DataManager {
+            static saveCurrentShopping() {
+                const data = {
+                    id: currentShoppingId,
+                    cart: shoppingCartJSON,
+                    products: availableProductsJSON,
+                    date: new Date().toISOString(),
+                    lastModified: new Date().toISOString()
+                };
+                localStorage.setItem('currentShopping', JSON.stringify(data));
+                console.log('💾 Guardado en localStorage:', data);
+            }
+
+            static loadCurrentShopping() {
+                const saved = localStorage.getItem('currentShopping');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    shoppingCartJSON = data.cart || [];
+                    availableProductsJSON = data.products || [...DEFAULT_PRODUCTS];
+                    currentShoppingId = data.id || this.generateShoppingId();
+                    console.log('📂 Cargado desde localStorage:', data);
+                    return true;
+                }
+                return false;
+            }
+
+            static saveProductConfig(productName, quantity, price) {
+                let configs = JSON.parse(localStorage.getItem('productConfigs') || '{}');
+                configs[productName] = { quantity, price, lastUsed: new Date().toISOString() };
+                localStorage.setItem('productConfigs', JSON.stringify(configs));
+                console.log('⚙️ Configuración guardada:', { productName, quantity, price });
+            }
+
+            static getProductConfig(productName) {
+                const configs = JSON.parse(localStorage.getItem('productConfigs') || '{}');
+                return configs[productName] || null;
+            }
+
+            static saveShoppingHistory(shoppingData) {
+                let history = JSON.parse(localStorage.getItem('shoppingHistory') || '[]');
+                history.push(shoppingData);
+                // Mantener solo los últimos 50 registros
+                if (history.length > 50) {
+                    history = history.slice(-50);
+                }
+                localStorage.setItem('shoppingHistory', JSON.stringify(history));
+                console.log('📚 Historial actualizado:', shoppingData);
+            }
+
+            static getShoppingHistory() {
+                return JSON.parse(localStorage.getItem('shoppingHistory') || '[]');
+            }
+
+            static clearHistory() {
+                localStorage.removeItem('shoppingHistory');
+                localStorage.removeItem('productConfigs');
+                console.log('🗑️ Historial limpiado');
+            }
+
+            static generateShoppingId() {
+                return 'shopping_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+        }
+
+        class StatsCalculator {
+            static calculatePeriodStats(period = 'all') {
+                const history = DataManager.getShoppingHistory();
+                const now = new Date();
+                let filteredHistory = history;
+
+                if (period === 'month') {
+                    const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1);
+                    filteredHistory = history.filter(item => new Date(item.finishedDate) >= monthAgo);
+                } else if (period === 'week') {
+                    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    filteredHistory = history.filter(item => new Date(item.finishedDate) >= weekAgo);
+                }
+
+                return {
+                    totalShoppings: filteredHistory.length,
+                    totalSpent: filteredHistory.reduce((sum, item) => sum + item.totalSpent, 0),
+                    averageSpent: filteredHistory.length > 0 ? 
+                        filteredHistory.reduce((sum, item) => sum + item.totalSpent, 0) / filteredHistory.length : 0,
+                    totalProducts: filteredHistory.reduce((sum, item) => sum + item.totalProducts, 0),
+                    averageProducts: filteredHistory.length > 0 ? 
+                        filteredHistory.reduce((sum, item) => sum + item.totalProducts, 0) / filteredHistory.length : 0,
+                    history: filteredHistory.slice(-10).reverse() // Últimos 10
+                };
+            }
+
+            static getMostBoughtProducts() {
+                const history = DataManager.getShoppingHistory();
+                const productCount = {};
+                
+                history.forEach(shopping => {
+                    shopping.products.forEach(product => {
+                        if (productCount[product.name]) {
+                            productCount[product.name].count++;
+                            productCount[product.name].totalSpent += product.quantity * product.price;
+                        } else {
+                            productCount[product.name] = {
+                                count: 1,
+                                totalSpent: product.quantity * product.price,
+                                avgPrice: product.price
+                            };
+                        }
+                    });
+                });
+
+                return Object.entries(productCount)
+                    .sort((a, b) => b[1].count - a[1].count)
+                    .slice(0, 10);
+            }
+        }
+
+        // Funciones principales
+        function init() {
+            console.log("🛒 Inicializando aplicación...");
+            
+            // Intentar cargar datos guardados
+            if (!DataManager.loadCurrentShopping()) {
+                // Si no hay datos guardados, usar configuración por defecto
+                availableProductsJSON = [...DEFAULT_PRODUCTS];
+                shoppingCartJSON = [];
+                currentShoppingId = DataManager.generateShoppingId();
+            }
+            
+            renderProducts();
+            calculateAndUpdateStats();
+            
+            // Guardar automáticamente cada cambio
+            DataManager.saveCurrentShopping();
+        }
+
+        function renderProducts() {
+            const listContainer = document.getElementById('shoppingList');
+            listContainer.innerHTML = '';
+
+            // Primero productos disponibles (no agregados)
+            availableProductsJSON.forEach((productName) => {
+                const isAlreadyInCart = shoppingCartJSON.find(item => item.name === productName);
+                
+                if (!isAlreadyInCart) {
+                    const itemDiv = createAvailableProductElement(productName);
+                    listContainer.appendChild(itemDiv);
+                }
+            });
+
+            // Luego productos del carrito
+            shoppingCartJSON.forEach((cartItem, cartIndex) => {
+                const itemDiv = createCartItemElement(cartItem, cartIndex);
+                listContainer.appendChild(itemDiv);
+            });
+
+            console.log("🛍️ Vista actualizada");
+        }
+
+        function createAvailableProductElement(productName) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'item';
+            itemDiv.onclick = () => openProductModal(productName);
+            
+            // Verificar si hay configuración previa
+            const prevConfig = DataManager.getProductConfig(productName);
+            let detailsText = 'Toca para agregar a tu lista';
+            if (prevConfig) {
+                detailsText = `Anterior: ${prevConfig.quantity} unid. a ₡${prevConfig.price.toLocaleString()}`;
+            }
+            
+            itemDiv.innerHTML = `
+                <div class="checkbox">
+                    <span>+</span>
+                </div>
+                <div class="item-content">
+                    <div class="item-name">${productName}</div>
+                    <div class="item-details">${detailsText}</div>
+                </div>
+            `;
+            
+            return itemDiv;
+        }
+
+        function createCartItemElement(cartItem, cartIndex) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `item ${cartItem.purchased ? 'completed' : ''}`;
+            itemDiv.onclick = () => togglePurchasedStatus(cartIndex);
+            
+            const itemTotal = calculateItemTotal(cartItem);
+            
+            itemDiv.innerHTML = `
+                <div class="checkbox ${cartItem.purchased ? 'checked' : ''}">
+                    ${cartItem.purchased ? '✓' : ''}
+                </div>
+                <div class="item-content">
+                    <div class="item-name">${cartItem.name}</div>
+                    <div class="item-details">
+                        Cant: ${cartItem.quantity} | Precio: ₡${cartItem.price.toLocaleString()} | Total: ₡${itemTotal.toLocaleString()}
+                    </div>
+                </div>
+            `;
+            
+            return itemDiv;
+        }
+
+        function openProductModal(productName) {
+            currentProduct = productName;
+            document.getElementById('modalTitle').textContent = `Agregar ${productName}`;
+            
+            // Cargar configuración previa si existe
+            const prevConfig = DataManager.getProductConfig(productName);
+            const prevConfigDiv = document.getElementById('previousConfigDiv');
+            
+            if (prevConfig) {
+                prevConfigDiv.style.display = 'block';
+                prevConfigDiv.innerHTML = `
+                    <div class="previous-config">
+                        💡 Configuración anterior: ${prevConfig.quantity} unid. a ₡${prevConfig.price.toLocaleString()}
+                        <br><small>Puedes usar estos valores o cambiarlos</small>
+                    </div>
+                `;
+                document.getElementById('quantity').value = prevConfig.quantity;
+                document.getElementById('price').value = prevConfig.price;
+            } else {
+                prevConfigDiv.style.display = 'none';
+                document.getElementById('quantity').value = 1;
+                document.getElementById('price').value = '';
+            }
+            
+            document.getElementById('itemModal').style.display = 'block';
+            
+            setTimeout(() => {
+                if (!prevConfig) {
+                    document.getElementById('price').focus();
+                }
+            }, 100);
+        }
+
+        function closeModal() {
+            document.getElementById('itemModal').style.display = 'none';
+            currentProduct = null;
+        }
+
+        function addToCart() {
+            const quantity = parseInt(document.getElementById('quantity').value) || 0;
+            const price = parseInt(document.getElementById('price').value) || 0;
+            
+            if (quantity > 0 && price >= 0 && currentProduct) {
+                // Guardar configuración del producto
+                DataManager.saveProductConfig(currentProduct, quantity, price);
+                
+                const newCartItem = {
+                    name: currentProduct,
+                    quantity: quantity,
+                    price: price,
+                    purchased: true,
+                    dateAdded: new Date().toISOString()
+                };
+                
+                shoppingCartJSON.push(newCartItem);
+                
+                closeModal();
+                renderProducts();
+                calculateAndUpdateStats();
+                DataManager.saveCurrentShopping();
+            } else {
+                alert("Por favor ingresa cantidad y precio válidos");
+            }
+        }
+
+        function openNewProductModal() {
+            document.getElementById('newProductName').value = '';
+            document.getElementById('newQuantity').value = 1;
+            document.getElementById('newPrice').value = '';
+            document.getElementById('newProductModal').style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('newProductName').focus();
+            }, 100);
+        }
+
+        function closeNewProductModal() {
+            document.getElementById('newProductModal').style.display = 'none';
+        }
+
+        function addNewProduct() {
+            const productName = document.getElementById('newProductName').value.trim();
+            const quantity = parseInt(document.getElementById('newQuantity').value) || 0;
+            const price = parseInt(document.getElementById('newPrice').value) || 0;
+            
+            if (productName && quantity > 0 && price >= 0) {
+                // Agregar a productos disponibles si no existe
+                if (!availableProductsJSON.includes(productName)) {
+                    availableProductsJSON.push(productName);
+                }
+                
+                // Guardar configuración
+                DataManager.saveProductConfig(productName, quantity, price);
+                
+                const newCartItem = {
+                    name: productName,
+                    quantity: quantity,
+                    price: price,
+                    purchased: true,
+                    dateAdded: new Date().toISOString(),
+                    isNewProduct: true
+                };
+                
+                shoppingCartJSON.push(newCartItem);
+                
+                closeNewProductModal();
+                renderProducts();
+                calculateAndUpdateStats();
+                DataManager.saveCurrentShopping();
+            } else {
+                alert("Por favor completa todos los campos correctamente");
+            }
+        }
+
+        function togglePurchasedStatus(cartIndex) {
+            if (shoppingCartJSON[cartIndex]) {
+                shoppingCartJSON[cartIndex].purchased = !shoppingCartJSON[cartIndex].purchased;
+                renderProducts();
+                calculateAndUpdateStats();
+                DataManager.saveCurrentShopping();
+            }
+        }
+
+        function calculateItemTotal(cartItem) {
+            return cartItem.quantity * cartItem.price;
+        }
+
+        function calculateAndUpdateStats() {
+            const stats = calculateShoppingStats();
+            updateProgressBar(stats);
+            updateTotalAmount(stats);
+        }
+
+        function calculateShoppingStats() {
+            const totalItemsInBaseList = availableProductsJSON.length;
+            const purchasedFromBaseList = shoppingCartJSON.filter(item => {
+                return item.purchased && availableProductsJSON.includes(item.name);
+            });
+            const purchasedFromBaseCount = purchasedFromBaseList.length;
+            
+            const extraProducts = shoppingCartJSON.filter(item => {
+                return item.purchased && item.isNewProduct;
+            });
+            
+            const allPurchasedItems = shoppingCartJSON.filter(item => item.purchased);
+            const totalSpent = allPurchasedItems.reduce((total, item) => {
+                return total + calculateItemTotal(item);
+            }, 0);
+            
+            const progressPercentage = totalItemsInBaseList > 0 ? 
+                (purchasedFromBaseCount / totalItemsInBaseList) * 100 : 0;
+            
+            return {
+                totalBaseItems: totalItemsInBaseList,
+                purchasedFromBaseCount: purchasedFromBaseCount,
+                extraProductsCount: extraProducts.length,
+                totalSpent: totalSpent,
+                progressPercentage: progressPercentage,
+                purchasedFromBase: purchasedFromBaseList,
+                extraProducts: extraProducts
+            };
+        }
+
+        function updateProgressBar(stats) {
+            document.getElementById('progressFill').style.width = stats.progressPercentage + '%';
+            
+            let progressText = `${stats.purchasedFromBaseCount} de ${stats.totalBaseItems} de tu lista`;
+            if (stats.extraProductsCount > 0) {
+                progressText += ` (+${stats.extraProductsCount} extra${stats.extraProductsCount > 1 ? 's' : ''})`;
+            }
+            
+            document.getElementById('progressText').textContent = progressText;
+            document.getElementById('progressPercent').textContent = Math.round(stats.progressPercentage) + '%';
+        }
+
+        function updateTotalAmount(stats) {
+            document.getElementById('totalAmount').textContent = `₡${stats.totalSpent.toLocaleString()}`;
+        }
+
+        // Funciones para manejo de listas de compras
+        function newShopping() {
+            if (shoppingCartJSON.length > 0) {
+                const confirmed = confirm('¿Estás seguro? Se perderá la lista actual.');
+                if (!confirmed) return;
+            }
+            
+            // Reiniciar lista actual
+            shoppingCartJSON = [];
+            currentShoppingId = DataManager.generateShoppingId();
+            
+            renderProducts();
+            calculateAndUpdateStats();
+            DataManager.saveCurrentShopping();
+            
+            console.log('🆕 Nueva lista iniciada');
+        }
+
+        function finishShopping() {
+            const purchasedItems = shoppingCartJSON.filter(item => item.purchased);
+            
+            if (purchasedItems.length === 0) {
+                alert('No hay productos comprados para finalizar.');
+                return;
+            }
+            
+            const totalSpent = purchasedItems.reduce((total, item) => {
+                return total + calculateItemTotal(item);
+            }, 0);
+            
+            const shoppingData = {
+                id: currentShoppingId,
+                finishedDate: new Date().toISOString(),
+                totalSpent: totalSpent,
+                totalProducts: purchasedItems.length,
+                products: purchasedItems.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    total: calculateItemTotal(item)
+                })),
+                duration: 'N/A' // Podrías implementar un timer si quieres
+            };
+            
+            // Guardar en historial
+            DataManager.saveShoppingHistory(shoppingData);
+            
+            // Limpiar lista actual
+            shoppingCartJSON = [];
+            currentShoppingId = DataManager.generateShoppingId();
+            
+            renderProducts();
+            calculateAndUpdateStats();
+            DataManager.saveCurrentShopping();
+            
+            alert(`¡Compra finalizada! Total: ₡${totalSpent.toLocaleString()}`);
+            console.log('✅ Compra finalizada y guardada en historial');
+        }
+
+        // Funciones de estadísticas
+        function showStats() {
+            document.getElementById('statsModal').style.display = 'block';
+            updateStatsDisplay();
+        }
+
+        function closeStatsModal() {
+            document.getElementById('statsModal').style.display = 'none';
+        }
+
+        function updateStatsDisplay() {
+            const period = document.getElementById('statsFilter').value;
+            const stats = StatsCalculator.calculatePeriodStats(period);
+            const mostBought = StatsCalculator.getMostBoughtProducts();
+            
+            let periodText = '';
+            switch(period) {
+                case 'month': periodText = 'este mes'; break;
+                case 'week': periodText = 'esta semana'; break;
+                default: periodText = 'total';
+            }
+            
+            const statsContent = document.getElementById('statsContent');
+            statsContent.innerHTML = `
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <div class="stat-title">💰 Gasto ${periodText}</div>
+                        <div class="stat-value">₡${stats.totalSpent.toLocaleString()}</div>
+                        <div class="stat-subtitle">Promedio por compra: ₡${Math.round(stats.averageSpent).toLocaleString()}</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">🛒 Compras realizadas</div>
+                        <div class="stat-value">${stats.totalShoppings}</div>
+                        <div class="stat-subtitle">Promedio de ${Math.round(stats.averageProducts)} productos por compra</div>
+                    </div>
+                    
+                    ${mostBought.length > 0 ? `
+                        <div class="stat-card">
+                            <div class="stat-title">⭐ Productos más comprados</div>
+                            ${mostBought.slice(0, 5).map(([name, data]) => `
+                                <div style="display: flex; justify-content: space-between; margin: 5px 0; padding: 5px; background: white; border-radius: 5px;">
+                                    <span>${name}</span>
+                                    <span>${data.count} veces</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    ${stats.history.length > 0 ? `
+                        <div class="stat-card">
+                            <div class="stat-title">📋 Historial reciente</div>
+                            ${stats.history.map(shopping => {
+                                const date = new Date(shopping.finishedDate);
+                                const dateStr = date.toLocaleDateString('es-ES', { 
+                                    day: '2-digit', 
+                                    month: '2-digit',
+                                    year: '2-digit'
+                                });
+                                return `
+                                    <div class="history-item">
+                                        <div>
+                                            <div class="history-date">${dateStr}</div>
+                                            <div style="font-size: 12px; color: #666;">${shopping.totalProducts} productos</div>
+                                        </div>
+                                        <div class="history-amount">₡${shopping.totalSpent.toLocaleString()}</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function clearHistory() {
+            const confirmed = confirm('¿Estás seguro de eliminar todo el historial? Esta acción no se puede deshacer.');
+            if (confirmed) {
+                DataManager.clearHistory();
+                updateStatsDisplay();
+                alert('Historial eliminado correctamente.');
+            }
+        }
+
+        // Event listeners
+        window.onclick = function(event) {
+            const itemModal = document.getElementById('itemModal');
+            const newProductModal = document.getElementById('newProductModal');
+            const statsModal = document.getElementById('statsModal');
+            
+            if (event.target === itemModal) {
+                closeModal();
+            }
+            if (event.target === newProductModal) {
+                closeNewProductModal();
+            }
+            if (event.target === statsModal) {
+                closeStatsModal();
+            }
+        }
+
+        // Prevenir zoom en iOS
+        document.addEventListener('touchstart', function() {
+            const viewportMeta = document.querySelector('meta[name="viewport"]');
+            viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
+        });
+
+        // Auto-guardar cada 30 segundos
+        setInterval(() => {
+            DataManager.saveCurrentShopping();
+        }, 30000);
+
+        // Guardar antes de cerrar la página
+        window.addEventListener('beforeunload', () => {
+            DataManager.saveCurrentShopping();
+        });
+
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("🚀 DOM cargado, inicializando...");
+            init();
+        });
+
+        // Si no hay DOMContentLoaded, inicializar directamente
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
