@@ -135,13 +135,17 @@ npx serve .
 
 La aplicación incluye:
 - 🏠 **Pantalla principal** con lista de productos
- ![image](https://github.com/user-attachments/assets/b130d26f-70ed-4fae-a3e1-8518f05db0bc)
+
+![image](https://github.com/user-attachments/assets/b130d26f-70ed-4fae-a3e1-8518f05db0bc)
 - ➕ **Modales de agregar** productos
+
   ![image](https://github.com/user-attachments/assets/56537afd-6da3-4fe6-89f7-dab1287279f6)
-![image](https://github.com/user-attachments/assets/8625a41a-2749-4607-91ec-b621b1447de7)
+
+   ![image](https://github.com/user-attachments/assets/8625a41a-2749-4607-91ec-b621b1447de7)
 
 - 📊 **Panel de estadísticas** completo
-  ![image](https://github.com/user-attachments/assets/f9d1332c-6588-4bb8-b857-ba5ab7e78acb)
+
+   ![image](https://github.com/user-attachments/assets/f9d1332c-6588-4bb8-b857-ba5ab7e78acb)
 
 - 📱 **Diseño responsivo** para móviles
 
